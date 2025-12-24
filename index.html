@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Échecs JS - Complet</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="main-side">
+            <div class="score-board">
+                <div class="score-item">
+                    <span class="score-label">Blancs</span>
+                    <span id="score-white" class="score-number">0</span>
+                </div>
+                <div class="score-divider">:</div>
+                <div class="score-item">
+                    <span class="score-label">Noirs/Bot</span>
+                    <span id="score-black" class="score-number">0</span>
+                </div>
+            </div>
+            <div id="status">Tour : Blancs</div>
+            <div class="timer-container">
+                <div id="timer-black" class="timer">Noir: 05:00</div>
+                <div id="timer-white" class="timer active-timer">Blanc: 05:00</div>
+            </div>
+
+            <div id="chessboard"></div>
+
+            <div class="mode-selector">
+                <div class="selector-group">
+                    <label for="game-mode">Mode :</label>
+                    <select id="game-mode">
+                        <option value="pvp">Joueur contre joueur</option>
+                        <option value="pve">Joueur contre Bot</option>
+                    </select>
+                </div>
+
+                <div class="selector-group">
+                    <label for="difficulty">Difficulté :</label>
+                    <select id="difficulty">
+                        <option value="easy">Facile (Aléatoire)</option>
+                        <option value="medium" selected>Moyen (Équilibré)</option>
+                        <option value="hard">Difficile (Agressif)</option>
+                    </select>
+                </div>
+                <div class="selector-group">
+                    <label for="timer-toggle">Activer le Timer :</label>
+                    <input type="checkbox" id="timer-toggle" checked>
+                </div>
+            </div>
+
+            <button id="reset-btn">Recommencer la partie</button>
+        </div>
+
+        <div class="history-side">
+            <h3>Captures</h3>
+            <div id="captures-white" class="captures"></div>
+            <div id="captures-black" class="captures"></div>
+            <hr>
+            <h3>Historique</h3>
+            <div id="move-log"></div>
+        </div>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>

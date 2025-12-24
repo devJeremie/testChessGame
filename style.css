@@ -1,0 +1,370 @@
+/*---------Css général---------*/
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: #2c3e50;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.game-container {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    background: #34495e;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/*---------Section Timer---------*/
+
+.timer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    width: 100%;
+}
+.timer {
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 5px;
+    background: #2c3e50;
+    color: #bdc3c7;
+}
+.active-timer {
+    background: #27ae60;
+    color: white;
+    box-shadow: 0 0 10px rgba(39, 174, 96, 0.7);
+    border: 1px solid white;
+}
+#status {
+    /* margin-bottom: 15px; */
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+/* Pour masquer les timers si l'option est décochée */
+.timer-container.hidden {
+    display: none;
+}
+
+/* Style spécifique pour la checkbox dans le sélecteur */
+#timer-toggle {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+/*-----------Curseur Drag and Drop-----------*/
+.cell[draggable="true"] {
+    cursor: grab;
+}
+.cell[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+/*-----------Plateau de jeu-----------*/
+
+#chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 65px);
+    grid-template-rows: repeat(8, 65px);
+    border: 5px solid #2c3e50;
+}
+.cell {
+    width: 65px;
+    height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 45px;
+    cursor: pointer;
+    user-select: none;
+    /*Propriétés pour les images des pièces*/
+    background-size: 80%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.white {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+}
+.black {
+    background-color: #95a5a6;
+    color: #2c3e50;
+}
+.selected {
+    background-color: #f1c40f !important;
+}
+
+/*-----------Indicateur de mouvement possible-----------*/
+.possible-move::after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    background: rgba(46, 204,113, 0.6);
+    border-radius: 50%;
+}
+
+/*-----------Bouton Recommencer-----------*/
+#reset-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+   
+    transition: background 0.3s;
+}
+
+#reset-btn:hover {
+    background-color: #c82333;
+}
+
+/*-----------Design des pièces (SVG)-----------*/
+.piece-P {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg');
+}
+.piece-R {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg');
+}
+.piece-N {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg');
+}
+.piece-B {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg');
+}
+.piece-Q {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg');
+}
+.piece-K {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg');
+}
+.piece-p {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg');
+}
+.piece-r {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg');
+}
+.piece-n {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg');
+}
+.piece-b {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg');
+}
+.piece-q {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg');
+}
+.piece-k {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg');
+}
+
+/*-----------Reste de l'interface-----------*/
+
+.history-side {
+    width: 220px;
+    background: #2c3e50;
+    padding: 15px;
+    border-radius: 8px;
+    /* display: flex;
+    flex-direction: column; */
+}
+
+.captures {
+    font-size: 24px;
+    min-height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+    padding: 5px;
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+/*-----------Petites pièces capturées soient aussi en images-----------*/
+.captures span {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 2px; /* Ajoute un petit espace entre les pièces mangées */
+    filter: drop-shadow(0px 0px 1px black); /* Optionnel : ajoute un petit contour pour plus de relief */
+}
+#move-log {
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 350px;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 4px;
+}
+.move-entry {
+    padding: 3px 0;
+    border-bottom: 1px solid #3e5871;
+}
+/*---------Style pour le bloc selecteur de mode---------*/
+.mode-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+}   
+.selector-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.selector-group label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.95rem;
+}
+.selector-group select {
+    width: 180px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #27ae60;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.3s;
+}
+.selector-group select:hover {
+    background-color: #2ce350;
+}
+.selector-group select option {
+    background-color: white;
+    color: black;
+}
+/*-------Tableaux des scores--------*/
+.score-board {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-family: sans-serif;
+    gap: 20px;
+}
+.score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.score-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #bdc3c7;
+}
+.score-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2ce350;
+    
+}
+.score-divider {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #7f8c8d;
+}
+/*-------Animation de prise de pièces--------*/
+.capture-anim {
+    animation: impact 0.4s ease-out;
+    position: relative;
+}
+
+@keyframes impact {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+/* Les particules d'explosion */
+.particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #e74c3c;
+    /* Couleur par défaut */
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100;
+}
+@keyframes explode {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) scale(0);
+        opacity: 0;
+    }
+}
+/* Positionnement des coordonnées à l'intérieur des cellules */
+.cell {
+    position: relative;
+    /* Indispensable pour placer les chiffres/lettres par rapport à la case */
+}
+.coord-number {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 11px;
+    font-weight: bold;
+    font-family: sans-serif;
+    pointer-events: none;
+    /* Empêche le texte de gêner le clic ou le drag */
+}
+.coord-letter {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    font-family: sans-serif;
+    pointer-events: none;
+}
+/* Couleurs contrastées selon la couleur de la case */
+.white .coord-number,
+.white .coord-letter {
+    color: #95a5a6;
+    /* Gris sur fond blanc */
+}
+.black .coord-number,
+.black .coord-letter {
+    color: #ecf0f1;
+    /* Blanc cassé sur fond gris */
+}
