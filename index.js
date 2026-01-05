@@ -1,60 +1,77 @@
-const boardElement = document.getElementById('chessboard');
-const statusElement = document.getElementById('status');
-const moveLog = document.getElementById('move-log');
-const whiteCapturesUI = document.getElementById('captures-white');
-const blackCapturesUI = document.getElementById('captures-black');
-const resetBtn = document.getElementById('reset-btn');
-const timerWhiteEl = document.getElementById('timer-white');
-const timerBlackEl = document.getElementById('timer-black');
-const modeSelect = document.getElementById('game-mode');
-const difficultySelect = document.getElementById('difficulty');
-//------Gestion du score------//
-let scores = { white: 0, black: 0 };
-const scoreWhiteEl = document.getElementById('score-white');
-const scoreBlackEl = document.getElementById('score-black');
+// =========================================
+// VARIABLES GLOBALES ET CONSTANTES
+// =========================================
 
+// Éléments DOM pour l'interface utilisateur
+const boardElement = document.getElementById('chessboard'); // Conteneur du plateau d'échecs
+const statusElement = document.getElementById('status'); // Affichage du statut du jeu (tour, échec, etc.)
+const moveLog = document.getElementById('move-log'); // Journal des coups joués
+const whiteCapturesUI = document.getElementById('captures-white'); // Affichage des pièces capturées par les Blancs
+const blackCapturesUI = document.getElementById('captures-black'); // Affichage des pièces capturées par les Noirs
+const resetBtn = document.getElementById('reset-btn'); // Bouton pour recommencer la partie
+const timerWhiteEl = document.getElementById('timer-white'); // Affichage du timer pour les Blancs
+const timerBlackEl = document.getElementById('timer-black'); // Affichage du timer pour les Noirs
+const modeSelect = document.getElementById('game-mode'); // Sélecteur de mode (PvP ou PvE)
+const difficultySelect = document.getElementById('difficulty'); // Sélecteur de difficulté pour le bot
+
+// Gestion du score des parties
+let scores = { white: 0, black: 0 }; // Compteurs de victoires
+const scoreWhiteEl = document.getElementById('score-white'); // Affichage du score des Blancs
+const scoreBlackEl = document.getElementById('score-black'); // Affichage du score des Noirs
+
+// Symboles Unicode pour représenter les pièces d'échecs
 const piecesSymbols = {
-    'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'p': '♟',
-    'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔', 'P': '♙'
+    'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'p': '♟', // Pièces noires
+    'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔', 'P': '♙'  // Pièces blanches
 };
 
+// Valeurs des pièces pour l'évaluation de l'IA (en centipions)
 const pieceValues = {
-    'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900,
-    'P': 10, 'N': 30, 'B': 30, 'R': 50, 'Q': 90, 'K': 900
+    'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900, // Pièces noires
+    'P': 10, 'N': 30, 'B': 30, 'R': 50, 'Q': 90, 'K': 900  // Pièces blanches
 };
 
-// Table de bonus de position (Le centre vaut 5, les bords valent 0 ou 1)
+// Table de bonus de position pour l'évaluation (le centre du plateau vaut plus)
 const positionWeights = [
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 4, 5, 5, 4, 2, 1],
-    [1, 2, 4, 5, 5, 4, 2, 1],
-    [1, 2, 2, 2, 2, 2, 2, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0, 0, 0, 0], // Rangée 8 (dernière pour les Blancs)
+    [1, 1, 1, 1, 1, 1, 1, 1], // Rangée 7
+    [1, 2, 2, 2, 2, 2, 2, 1], // Rangée 6
+    [1, 2, 4, 5, 5, 4, 2, 1], // Rangée 5 (centre)
+    [1, 2, 4, 5, 5, 4, 2, 1], // Rangée 4 (centre)
+    [1, 2, 2, 2, 2, 2, 2, 1], // Rangée 3
+    [1, 1, 1, 1, 1, 1, 1, 1], // Rangée 2
+    [0, 0, 0, 0, 0, 0, 0, 0]  // Rangée 1 (dernière pour les Noirs)
 ];
 
-const soundMove = new Audio('https://images.chesscomfiles.com/chess-themes/pieces/neo/sounds/move-self.mp3');
-const soundCapture = new Audio('https://images.chesscomfiles.com/chess-themes/pieces/neo/sounds/capture.mp3');
-const soundCheck = new Audio('https://images.chesscomfiles.com/chess-themes/pieces/neo/sounds/move-check.mp3');
-//const du timer 
-const timerToggle = document.getElementById('timer-toggle');
-const timerContainer = document.querySelector('.timer-container');
+// Sons pour les actions du jeu
+const soundMove = new Audio('https://images.chesscomfiles.com/chess-themes/pieces/neo/sounds/move-self.mp3'); // Son de déplacement
+const soundCapture = new Audio('https://images.chesscomfiles.com/chess-themes/pieces/neo/sounds/capture.mp3'); // Son de capture
+const soundCheck = new Audio('https://images.chesscomfiles.com/chess-themes/pieces/neo/sounds/move-check.mp3'); // Son d'échec
 
-let board = [];
-let selectedPiece = null;
-let turn = 'white';
-let moveCount = 1;
-let timeLeft = { white: 300, black: 300 };
-let timerInterval = null;
-let gameStarted = false;
-let gameActive = true; // Permet de savoir si la partie est en cours ou finie
-// -------- VAriable pour le ROQUE --------//
+// Éléments pour le timer
+const timerToggle = document.getElementById('timer-toggle'); // Checkbox pour activer/désactiver le timer
+const timerContainer = document.querySelector('.timer-container'); // Conteneur des timers
+
+// État du jeu
+let board = []; // Représentation du plateau (8x8 array de strings)
+let selectedPiece = null; // Pièce actuellement sélectionnée {r, c}
+let turn = 'white'; // Tour actuel ('white' ou 'black')
+let moveCount = 1; // Numéro du coup actuel
+let timeLeft = { white: 300, black: 300 }; // Temps restant en secondes (5 minutes chacun)
+let timerInterval = null; // Intervalle pour le timer
+let gameStarted = false; // Indique si la partie a commencé
+let gameActive = true; // Indique si la partie est active (pas terminée)
+
+// Variables pour gérer le roque (castling)
 let hasMoved = {
-    'K': false, 'R_0_0': false, 'R_0_7': false, // Blancs (Roi et Tours)
-    'k': false, 'r_7_0': false, 'r_7_7': false  // Noirs
+    'K': false, 'R_0_0': false, 'R_0_7': false, // Blancs : Roi et Tours (indices 0,0 et 0,7)
+    'k': false, 'r_7_0': false, 'r_7_7': false  // Noirs : Roi et Tours (indices 7,0 et 7,7)
 };
+// =========================================
+// FONCTIONS UTILITAIRES ET D'INITIALISATION
+// =========================================
+
+// Crée un effet d'explosion visuelle lors d'une capture de pièce
 function createExplosion(row, col) {
     const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
     if (!cell) return;
@@ -79,59 +96,70 @@ function createExplosion(row, col) {
     }
 }
 
+// Met à jour le score des joueurs après une victoire
 function updateScore(winner) {
     scores[winner]++;
     scoreWhiteEl.innerText = scores.white;
     scoreBlackEl.innerText = scores.black;
 }
 
+// Initialise une nouvelle partie d'échecs
 function initGame() {
+    // Configuration initiale du plateau (position standard des pièces)
     board = [
-        ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-        ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-        ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+        ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'], // Rangée 8 (Noirs)
+        ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'], // Rangée 7 (Pions noirs)
+        ['', '', '', '', '', '', '', ''],         // Rangée 6 (vide)
+        ['', '', '', '', '', '', '', ''],         // Rangée 5 (vide)
+        ['', '', '', '', '', '', '', ''],         // Rangée 4 (vide)
+        ['', '', '', '', '', '', '', ''],         // Rangée 3 (vide)
+        ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'], // Rangée 2 (Pions blancs)
+        ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']  // Rangée 1 (Blancs)
     ];
 
-    turn = 'white';
-    selectedPiece = null;
-    moveCount = 1;
-    timeLeft = { white: 300, black: 300 };
-    gameStarted = false;
-    gameActive = true; // <-- AJOUTÉ : On autorise à nouveau de marquer un point
+    // Réinitialisation des variables d'état du jeu
+    turn = 'white'; // Les Blancs commencent
+    selectedPiece = null; // Aucune pièce sélectionnée
+    moveCount = 1; // Premier coup
+    timeLeft = { white: 300, black: 300 }; // 5 minutes chacun (300 secondes)
+    gameStarted = false; // La partie n'a pas encore commencé
+    gameActive = true; // La partie est active
 
-    clearInterval(timerInterval);
+    clearInterval(timerInterval); // Arrêt du timer précédent
 
-    //---------Réinitialiser l'état du ROQUE----------//
+    // Réinitialisation des drapeaux de roque (aucune pièce n'a bougé)
     hasMoved = {
-        'K': false, 'R_0_0': false, 'R_0_7': false, // Blancs
-        'k': false, 'r_7_0': false, 'r_7_7': false  // Noirs
+        'K': false, 'R_0_0': false, 'R_0_7': false, // Blancs : Roi et Tours
+        'k': false, 'r_7_0': false, 'r_7_7': false  // Noirs : Roi et Tours
     };
 
-    moveLog.innerHTML = '';
-    whiteCapturesUI.innerHTML = '';
-    blackCapturesUI.innerHTML = '';
+    // Nettoyage de l'interface utilisateur
+    moveLog.innerHTML = ''; // Vide l'historique des coups
+    whiteCapturesUI.innerHTML = ''; // Vide les pièces capturées par les Blancs
+    blackCapturesUI.innerHTML = ''; // Vide les pièces capturées par les Noirs
 
-    updateTimerDisplay();
-    createBoard();
+    updateTimerDisplay(); // Met à jour l'affichage des timers
+    createBoard(); // Crée et affiche le plateau
 }
 
-function createBoard() {
-    boardElement.innerHTML = '';
-    const gameState = checkGameOver();
+// =========================================
+// FONCTIONS D'AFFICHAGE ET D'INTERACTION
+// =========================================
 
+// Crée et affiche le plateau d'échecs avec toutes les pièces et informations de jeu
+function createBoard() {
+    boardElement.innerHTML = ''; // Vide le conteneur du plateau
+    const gameState = checkGameOver(); // Vérifie si la partie est terminée
+
+    // Mise à jour du statut du jeu selon l'état actuel
     if (gameState === 'mate') {
-        const winner = turn === 'white' ? 'black' : 'white';
+        const winner = turn === 'white' ? 'black' : 'white'; // Le gagnant est l'adversaire du joueur en échec
         statusElement.innerText = `MAT ! Victoire des ${winner === 'white' ? 'Blancs' : 'Noirs'}`;
-        clearInterval(timerInterval);
+        clearInterval(timerInterval); // Arrêt du timer
 
         if (gameActive) {
-            updateScore(winner);
-            gameActive = false;
+            updateScore(winner); // Met à jour le score
+            gameActive = false; // Marque la partie comme terminée
         }
     } else if (isKingInCheck(turn, board)) {
         statusElement.innerText = `ÉCHEC aux ${turn === 'white' ? 'Blancs' : 'Noirs'}`;
@@ -139,15 +167,16 @@ function createBoard() {
         statusElement.innerText = `Tour : ${turn === 'white' ? 'Blancs' : 'Noirs'}`;
     }
 
+    // Création des 64 cases du plateau
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
             const cell = document.createElement('div');
-            cell.classList.add('cell', (r + c) % 2 === 0 ? 'white' : 'black');
-            cell.dataset.row = r;
+            cell.classList.add('cell', (r + c) % 2 === 0 ? 'white' : 'black'); // Alternance couleur cases
+            cell.dataset.row = r; // Stockage des coordonnées pour les interactions
             cell.dataset.col = c;
 
-            // --- DEBUT : AJOUT DES COORDONNEES INTERNES ---
-            // On affiche le chiffre (8-r) sur la première colonne (colonne 0)
+            // Ajout des coordonnées alphanumériques sur le plateau
+            // Chiffres sur la colonne de gauche (8-r pour commencer par 8 en haut)
             if (c === 0) {
                 const numSpan = document.createElement('span');
                 numSpan.classList.add('coord-number');
@@ -155,7 +184,7 @@ function createBoard() {
                 cell.appendChild(numSpan);
             }
 
-            // On affiche la lettre sur la dernière ligne (ligne 7)
+            // Lettres sur la ligne du bas (a-h)
             if (r === 7) {
                 const letSpan = document.createElement('span');
                 letSpan.classList.add('coord-letter');
@@ -163,18 +192,19 @@ function createBoard() {
                 letSpan.innerText = letters[c];
                 cell.appendChild(letSpan);
             }
-            // --- FIN : AJOUT DES COORDONNEES ---
 
             const piece = board[r][c];
             if (piece !== '') {
-                cell.classList.add(`piece-${piece}`);
+                cell.classList.add(`piece-${piece}`); // Ajout de la classe CSS pour afficher la pièce
                 const isWhite = piece === piece.toUpperCase();
                 const isBotTurn = (turn === 'black' && modeSelect.value === 'pve');
+                // Rend la pièce déplaçable si c'est le tour du joueur et pas du bot
                 if (((turn === 'white' && isWhite) || (turn === 'black' && !isWhite)) && !isBotTurn) {
                     cell.setAttribute('draggable', 'true');
                 }
             }
 
+            // Ajout des gestionnaires d'événements pour les interactions
             cell.onclick = () => handleCellClick(r, c);
             cell.ondragstart = handleDragStart;
             cell.ondragover = (e) => e.preventDefault();
@@ -184,6 +214,7 @@ function createBoard() {
     }
 }
 
+// Gère les clics sur les cases du plateau pour sélectionner et déplacer les pièces
 function handleCellClick(r, c) {
     // Empêcher de cliquer pendant que le bot réfléchit
     if (turn === 'black' && modeSelect.value === 'pve') return;
@@ -192,43 +223,51 @@ function handleCellClick(r, c) {
     const isWhite = piece !== '' && piece === piece.toUpperCase();
 
     if (selectedPiece) {
+        // Si une pièce est déjà sélectionnée, tenter de la déplacer
         if (isValidMove(selectedPiece.r, selectedPiece.c, r, c, board) && !wouldBeInCheck(selectedPiece.r, selectedPiece.c, r, c, turn)) {
 
-            const isCapture = board[r][c] !== ''; // On vérifie si la case d'arrivée contient une pièce
+            const isCapture = board[r][c] !== ''; // Vérifie si la case d'arrivée contient une pièce
 
-            executeMove(selectedPiece.r, selectedPiece.c, r, c);
-            selectedPiece = null;
+            executeMove(selectedPiece.r, selectedPiece.c, r, c); // Exécute le mouvement
+            selectedPiece = null; // Désélectionne la pièce
 
-            // On attend 400ms (durée de l'animation) si c'est une capture
+            // Attend la fin de l'animation avant de reconstruire le plateau
             setTimeout(createBoard, isCapture ? 400 : 0);
 
         } else {
+            // Mouvement invalide : désélectionne et rafraîchit le plateau
             selectedPiece = null;
             createBoard();
         }
     } else {
+        // Sélectionne une pièce si elle appartient au joueur actuel
         if (piece !== '' && ((turn === 'white' && isWhite) || (turn === 'black' && !isWhite))) {
             selectedPiece = { r, c };
-            createBoard();
-            showHints(r, c);
+            createBoard(); // Rafraîchit pour montrer la sélection
+            showHints(r, c); // Affiche les mouvements possibles
         }
     }
 }
 
+// Affiche les mouvements possibles pour la pièce sélectionnée en surlignant les cases
 function showHints(fR, fC) {
+    // Surligne la case de la pièce sélectionnée
     const selectedCell = document.querySelector(`[data-row="${fR}"][data-col="${fC}"]`);
     if (selectedCell) selectedCell.classList.add('selected');
 
+    // Parcourt toutes les cases pour identifier les mouvements valides
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
+            // Vérifie si le mouvement est valide et ne met pas le roi en échec
             if (isValidMove(fR, fC, r, c, board) && !wouldBeInCheck(fR, fC, r, c, turn)) {
                 const targetCell = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                if (targetCell) targetCell.classList.add('possible-move');
+                if (targetCell) targetCell.classList.add('possible-move'); // Surligne la case cible
             }
         }
     }
 }
 
+// Calcule un score heuristique pour un mouvement donné, utilisé par l'IA en mode Medium
 function calculateMoveScore(fR, fC, tR, tC) {
     let score = 0;
     const movingPiece = board[fR][fC];
@@ -236,16 +275,16 @@ function calculateMoveScore(fR, fC, tR, tC) {
 
     // 1. Matériel : Capturer une pièce est prioritaire
     if (targetPiece !== '') {
-        score += pieceValues[targetPiece] * 10;
+        score += pieceValues[targetPiece] * 10; // Bonus élevé pour les captures
     }
 
     // 2. Position : Bonus pour le contrôle du centre
-    score += positionWeights[tR][tC];
+    score += positionWeights[tR][tC]; // Points supplémentaires pour les cases centrales
 
-    // 3. Sécurité immédiate : 
+    // 3. Sécurité immédiate : Évite de placer la pièce sur une case attaquée
     // Même en mode Medium, on évite de donner une pièce gratuitement
     if (isSquareAttacked(tR, tC, 'white')) {
-        score -= pieceValues[movingPiece] * 8;
+        score -= pieceValues[movingPiece] * 8; // Pénalité si la case est attaquée par l'adversaire
     }
 
     return score;
@@ -301,18 +340,23 @@ function makeBotMove() {
     }
 }
 
+// Gère le début du drag-and-drop pour déplacer une pièce
 function handleDragStart(e) {
+    // Empêche le drag si c'est le tour du bot
     if (turn === 'black' && modeSelect.value === 'pve') {
         e.preventDefault();
         return;
     }
+    // Récupère les coordonnées de la pièce sélectionnée
     const r = parseInt(e.target.dataset.row);
     const c = parseInt(e.target.dataset.col);
     selectedPiece = { r, c };
-    showHints(r, c);
+    showHints(r, c); // Affiche les mouvements possibles
+    // Stocke les données pour le drop
     e.dataTransfer.setData('text/plain', JSON.stringify({ r, c }));
 }
 
+// Gère la fin du drag-and-drop pour valider et exécuter le mouvement de pièce
 function handleDrop(e) {
     e.preventDefault();
     const dataStr = e.dataTransfer.getData('text/plain');
@@ -344,6 +388,7 @@ function handleDrop(e) {
     }
 }
 
+// Démarre ou relance le timer pour le joueur actuel, gérant la fin de partie si le temps est écoulé
 function startTimer() {
     // ÉTAPE CLÉ : Si le timer est désactivé par l'utilisateur, on sort immédiatement
     if (!timerToggle.checked) {
@@ -366,6 +411,7 @@ function startTimer() {
     }, 1000);
 }
 
+// Met à jour l'affichage des timers en fonction de l'état du toggle et formate le temps restant
 function updateTimerDisplay() {
     // Si la checkbox n'est pas cochée, on cache le conteneur des timers
     if (!timerToggle.checked) {
@@ -467,6 +513,7 @@ function executeMove(fR, fC, tR, tC) {
 // Les fonctions isValidMove, isPathClear, isKingInCheck, wouldBeInCheck, checkGameOver restent identiques
 // ... (copie ton bloc de fonctions de validation ici si nécessaire, mais elles étaient correctes dans ton code)
 
+// Vérifie si un mouvement est valide selon les règles des pièces d'échecs, incluant le roque
 function isValidMove(fR, fC, tR, tC, b) {
     const pieceObj = b[fR][fC];
     if (!pieceObj) return false;
@@ -530,6 +577,7 @@ function isValidMove(fR, fC, tR, tC, b) {
     return false;
 }
 
+// Vérifie si le chemin entre deux cases est dégagé pour les pièces qui se déplacent en ligne droite (Tour, Fou, Reine)
 function isPathClear(fR, fC, tR, tC, b) {
     const stepR = tR === fR ? 0 : (tR > fR ? 1 : -1);
     const stepC = tC === fC ? 0 : (tC > fC ? 1 : -1);
@@ -541,6 +589,7 @@ function isPathClear(fR, fC, tR, tC, b) {
     return true;
 }
 
+// Vérifie si le roi de la couleur donnée est en échec sur le plateau fourni
 function isKingInCheck(color, b) {
     let kingPos = null;
     const targetKing = color === 'white' ? 'K' : 'k';
@@ -568,6 +617,7 @@ function wouldBeInCheck(fR, fC, tR, tC, color) {
     return isKingInCheck(color, tempBoard);
 }
 
+// Vérifie si la partie est terminée : retourne 'playing', 'mate' ou 'draw'
 function checkGameOver() {
     let canMove = false;
     for (let r = 0; r < 8; r++) {
@@ -588,6 +638,7 @@ function checkGameOver() {
     return canMove ? 'playing' : (isKingInCheck(turn, board) ? 'mate' : 'draw');
 }
 
+// Évalue le plateau actuel et retourne un score pour l'IA (positif favorable aux noirs, négatif aux blancs)
 function evaluateBoard(currentBoard) {
     let totalScore = 0;
     for (let r = 0; r < 8; r++) {
@@ -645,6 +696,7 @@ function minimax(tempBoard, depth, isMaximizing, alpha, beta) {
     }
 }
 
+// Retourne tous les mouvements légaux pour une couleur donnée sur un plateau donné
 function getAllLegalMoves(currentBoard, color) {
     let moves = [];
     for (let r = 0; r < 8; r++) {
