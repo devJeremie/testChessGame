@@ -1,29 +1,34 @@
 /*---------Css général---------*/
-*{
+* {
     box-sizing: border-box;
     padding: 0;
     margin: 0;
 }
+
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background: #2c3e50;
+    background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
+    /* Fond dégradé pour plus de profondeur */
     color: white;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
 .game-container {
     display: flex;
     gap: 30px;
-    padding: 20px;
+    padding: 25px;
     background: #34495e;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    /* Ajout d'une perspective sur le conteneur pour l'effet 3D du plateau */
+    perspective: 1200px;
 }
 
-/*---------Section Timer---------*/
+/*---------Section Timer & Status---------*/
 
 .timer-container {
     display: flex;
@@ -32,6 +37,7 @@ body {
     margin-bottom: 15px;
     width: 100%;
 }
+
 .timer {
     font-family: monospace;
     font-size: 1.1rem;
@@ -40,331 +46,303 @@ body {
     border-radius: 5px;
     background: #2c3e50;
     color: #bdc3c7;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .active-timer {
     background: #27ae60;
     color: white;
-    box-shadow: 0 0 10px rgba(39, 174, 96, 0.7);
+    box-shadow: 0 0 15px rgba(39, 174, 96, 0.5);
     border: 1px solid white;
 }
+
 #status {
-    /* margin-bottom: 15px; */
     font-size: 1.5rem;
     font-weight: bold;
-}
-/* Pour masquer les timers si l'option est décochée */
-.timer-container.hidden {
-    display: none;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Style spécifique pour la checkbox dans le sélecteur */
-#timer-toggle {
-    cursor: pointer;
-    width: 18px;
-    height: 18px;
-}
-
-/*-----------Curseur Drag and Drop-----------*/
-.cell[draggable="true"] {
-    cursor: grab;
-}
-.cell[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-/*-----------Plateau de jeu-----------*/
+/*-----------Plateau de jeu (Effet 3D)-----------*/
 
 #chessboard {
     display: grid;
     grid-template-columns: repeat(8, 65px);
     grid-template-rows: repeat(8, 65px);
-    border: 5px solid #2c3e50;
+    border: 10px solid #2c3e50;
+    background-color: #2c3e50;
+    /* Inclinaison du plateau pour la perspective */
+    transform: rotateX(15deg);
+    box-shadow: 0 30px 40px rgba(0, 0, 0, 0.5);
+    transition: transform 0.5s ease;
 }
+
+/* Redressement des pièces pour qu'elles paraissent "debout" malgré l'inclinaison du plateau */
 .cell {
     width: 65px;
     height: 65px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 45px;
+    position: relative;
     cursor: pointer;
     user-select: none;
-    /*Propriétés pour les images des pièces*/
-    background-size: 80%;
+    background-size: 85%;
     background-repeat: no-repeat;
     background-position: center;
 }
+
 .white {
-    background-color: #ecf0f1;
-    color: #2c3e50;
+    background-color: #ebecd0;
+    /* Couleur crème pro */
 }
+
 .black {
-    background-color: #95a5a6;
-    color: #2c3e50;
+    background-color: #779556;
+    /* Vert "Lichess" moderne */
 }
+
 .selected {
     background-color: #f1c40f !important;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+/*-----------Design des pièces (SVG + Ombre 3D)-----------*/
+
+[class*="piece-"] {
+    /* L'ombre portée est la clé de l'effet 3D sur des images plates */
+    filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.6));
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 100%;
+    height: 100%;
+}
+
+/* Seule la pièce se soulève, pas la case */
+.cell[draggable="true"] {
+    /* On s'assure que la case ne bouge pas */
+    transform: none !important;
+}
+
+/* On cible l'élément interne ou le background si on utilise des pseudos-éléments, 
+   mais dans votre structure, le plus propre est de ne surélever que lors du drag réel 
+   ou de limiter l'effet de hover. */
+
+[class*="piece-"]:hover {
+    /* On réduit l'amplitude pour que ce soit plus élégant */
+    transform: translateY(-4px);
+    filter: drop-shadow(0 8px 5px rgba(0, 0, 0, 0.4));
+    transition: transform 0.2s ease;
+}
+
+/* Quand on clique pour déplacer (drag), on peut accentuer l'effet */
+.cell[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+/* Mapping vers les images (SVG Haute qualité) */
+.piece-P {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg');
+}
+
+.piece-R {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg');
+}
+
+.piece-N {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg');
+}
+
+.piece-B {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg');
+}
+
+.piece-Q {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg');
+}
+
+.piece-K {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg');
+}
+
+.piece-p {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg');
+}
+
+.piece-r {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg');
+}
+
+.piece-n {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg');
+}
+
+.piece-b {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg');
+}
+
+.piece-q {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg');
+}
+
+.piece-k {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg');
 }
 
 /*-----------Indicateur de mouvement possible-----------*/
 .possible-move::after {
     content: '';
-    width: 18px;
-    height: 18px;
-    background: rgba(46, 204,113, 0.6);
+    width: 20px;
+    height: 20px;
+    background: rgba(46, 204, 113, 0.4);
     border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-/*-----------Bouton Recommencer-----------*/
+/*-----------Interface Latérale (Score & History)-----------*/
+
+.history-side {
+    width: 240px;
+    background: #2c3e50;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.captures {
+    font-size: 24px;
+    min-height: 45px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.captures span {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.5));
+}
+
+#move-log {
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 300px;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.move-entry {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/*---------Boutons & Selecteurs (Look "Flat Modern")---------*/
+
 #reset-btn {
     width: 100%;
     padding: 12px;
-    background-color: #dc3545;
+    background-color: #e74c3c;
     border: none;
     color: white;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
     font-size: 1rem;
-    transition: background 0.3s ease;
-   
-    transition: background 0.3s;
+    transition: all 0.3s;
+    margin-top: 10px;
 }
 
 #reset-btn:hover {
-    background-color: #c82333;
+    background-color: #c0392b;
+    transform: translateY(-2px);
 }
 
-/*-----------Design des pièces (SVG)-----------*/
-.piece-P {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg');
-}
-.piece-R {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg');
-}
-.piece-N {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg');
-}
-.piece-B {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg');
-}
-.piece-Q {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg');
-}
-.piece-K {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg');
-}
-.piece-p {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg');
-}
-.piece-r {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg');
-}
-.piece-n {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg');
-}
-.piece-b {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg');
-}
-.piece-q {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg');
-}
-.piece-k {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg');
-}
-
-/*-----------Reste de l'interface-----------*/
-
-.history-side {
-    width: 220px;
-    background: #2c3e50;
-    padding: 15px;
-    border-radius: 8px;
-    /* display: flex;
-    flex-direction: column; */
-}
-
-.captures {
-    font-size: 24px;
-    min-height: 40px;
-    background: rgba(255, 255, 255, 0.1);
-    margin-bottom: 10px;
-    padding: 5px;
-    border-radius: 4px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-/*-----------Petites pièces capturées soient aussi en images-----------*/
-.captures span {
-    display: inline-block;
-    width: 25px;
-    height: 25px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    margin-right: 2px; /* Ajoute un petit espace entre les pièces mangées */
-    filter: drop-shadow(0px 0px 1px black); /* Optionnel : ajoute un petit contour pour plus de relief */
-}
-#move-log {
-    flex-grow: 1;
-    overflow-y: auto;
-    max-height: 350px;
-    font-size: 0.85rem;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 4px;
-}
-.move-entry {
-    padding: 3px 0;
-    border-bottom: 1px solid #3e5871;
-}
-/*---------Style pour le bloc selecteur de mode---------*/
 .mode-selector {
     display: flex;
     flex-direction: column;
     gap: 12px;
     margin: 20px 0;
     padding: 15px;
-    background-color: #f8f9fa;
-    border: 1px solid #ddd;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-}   
-.selector-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
-.selector-group label {
-    font-weight: bold;
-    color: #333;
-    font-size: 0.95rem;
-}
+
 .selector-group select {
-    width: 180px;
-    padding: 6px 10px;
-    border: 1px solid #ccc;
+    width: 100%;
+    padding: 8px;
     border-radius: 4px;
     background-color: #27ae60;
-    font-family: inherit;
-    cursor: pointer;
-    outline: none;
-    transition: background 0.3s;
-}
-.selector-group select:hover {
-    background-color: #2ce350;
-}
-.selector-group select option {
-    background-color: white;
-    color: black;
-}
-/*-------Tableaux des scores--------*/
-.score-board {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #2c3e50;
     color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    font-family: sans-serif;
-    gap: 20px;
+    border: none;
+    cursor: pointer;
 }
-.score-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.score-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #bdc3c7;
-}
-.score-number {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #2ce350;
-    
-}
-.score-divider {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #7f8c8d;
-}
-/*-------Animation de prise de pièces--------*/
+
+/*-------Animations & Particules--------*/
+
 .capture-anim {
     animation: impact 0.4s ease-out;
-    position: relative;
 }
 
 @keyframes impact {
     0% {
         transform: scale(1);
     }
+
     50% {
-        transform: scale(1.1);
-        background-color: rgba(255, 255, 255, 0.4);
+        transform: scale(1.2);
+        background-color: rgba(231, 76, 60, 0.3);
     }
+
     100% {
         transform: scale(1);
     }
 }
-/* Les particules d'explosion */
+
 .particle {
     position: absolute;
-    width: 8px;
-    height: 8px;
-    background: #e74c3c;
-    /* Couleur par défaut */
+    width: 6px;
+    height: 6px;
+    background: #f1c40f;
     border-radius: 50%;
     pointer-events: none;
     z-index: 100;
 }
-@keyframes explode {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--dx), var(--dy)) scale(0);
-        opacity: 0;
-    }
-}
-/* Positionnement des coordonnées à l'intérieur des cellules */
-.cell {
-    position: relative;
-    /* Indispensable pour placer les chiffres/lettres par rapport à la case */
-}
-.coord-number {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    font-size: 11px;
-    font-weight: bold;
-    font-family: sans-serif;
-    pointer-events: none;
-    /* Empêche le texte de gêner le clic ou le drag */
-}
+
+/* Chiffres et lettres (coordonnées) */
+.coord-number,
 .coord-letter {
     position: absolute;
-    bottom: 2px;
-    right: 4px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: bold;
-    font-family: sans-serif;
     pointer-events: none;
+    opacity: 0.6;
 }
-/* Couleurs contrastées selon la couleur de la case */
+
+.coord-number {
+    top: 2px;
+    left: 2px;
+}
+
+.coord-letter {
+    bottom: 2px;
+    right: 2px;
+}
+
 .white .coord-number,
 .white .coord-letter {
-    color: #95a5a6;
-    /* Gris sur fond blanc */
+    color: #779556;
 }
+
 .black .coord-number,
 .black .coord-letter {
-    color: #ecf0f1;
-    /* Blanc cassé sur fond gris */
+    color: #ebecd0;
 }
