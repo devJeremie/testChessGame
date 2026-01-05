@@ -1,14 +1,21 @@
+<!-- Fichier HTML principal pour le jeu d'échecs en JavaScript -->
+<!-- Ce fichier définit l'interface utilisateur du jeu, incluant le plateau, les scores, les timers, et l'historique des coups -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <!-- Métadonnées de la page -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Échecs JS - Complet</title>
+    <!-- Lien vers la feuille de style CSS pour l'apparence du jeu -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Conteneur principal du jeu, divisant l'interface en deux parties : principale et historique -->
     <div class="game-container">
+        <!-- Partie principale : contient le plateau, les contrôles et les informations de jeu -->
         <div class="main-side">
+            <!-- Tableau des scores : affiche les victoires des Blancs et des Noirs/Bot -->
             <div class="score-board">
                 <div class="score-item">
                     <span class="score-label">Blancs</span>
@@ -20,14 +27,18 @@
                     <span id="score-black" class="score-number">0</span>
                 </div>
             </div>
+            <!-- Affichage du statut du jeu : tour actuel, échec, mat, etc. -->
             <div id="status">Tour : Blancs</div>
+            <!-- Conteneur des timers : affiche le temps restant pour chaque joueur -->
             <div class="timer-container">
                 <div id="timer-black" class="timer">Noir: 05:00</div>
                 <div id="timer-white" class="timer active-timer">Blanc: 05:00</div>
             </div>
 
+            <!-- Plateau d'échecs : grille 8x8 où les pièces sont affichées et les interactions se font -->
             <div id="chessboard"></div>
 
+            <!-- Sélecteurs de mode de jeu : choix entre joueur contre joueur ou contre bot, difficulté, et activation du timer -->
             <div class="mode-selector">
                 <div class="selector-group">
                     <label for="game-mode">Mode :</label>
@@ -51,18 +62,24 @@
                 </div>
             </div>
 
+            <!-- Bouton pour recommencer une nouvelle partie -->
             <button id="reset-btn">Recommencer la partie</button>
         </div>
 
+        <!-- Partie historique : affiche les pièces capturées et l'historique des coups -->
         <div class="history-side">
             <h3>Captures</h3>
+            <!-- Affichage des pièces capturées par les Blancs -->
             <div id="captures-white" class="captures"></div>
+            <!-- Affichage des pièces capturées par les Noirs -->
             <div id="captures-black" class="captures"></div>
             <hr>
             <h3>Historique</h3>
+            <!-- Journal des coups joués pendant la partie -->
             <div id="move-log"></div>
         </div>
     </div>
+    <!-- Inclusion du script JavaScript principal qui gère la logique du jeu -->
     <script src="index.js"></script>
 </body>
 </html>
