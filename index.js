@@ -758,7 +758,6 @@ timerToggle.addEventListener('change', () => {
         startTimer();
     }
 });
-
 // Écouteur pour le changement de mode ou difficulté (Relance une partie propre)
 modeSelect.addEventListener('change', initGame);
 difficultySelect.addEventListener('change', initGame);
